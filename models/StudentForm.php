@@ -41,7 +41,7 @@ class StudentForm extends ActiveRecord
             ['email', 'email'],
             ['dob', 'date', 'format' => 'yyyy-mm-dd'],
             ['email', 'unique', 'targetClass' => StudentForm::class],
-            ['student_img', 'file', 'extensions' => ['jpg', 'jpeg', 'png', 'pdf']],
+            ['student_img', 'file', 'extensions' => ['jpg', 'jpeg', 'png']],
             [['remove_image'], 'safe'],
         ];
     }
@@ -64,7 +64,7 @@ class StudentForm extends ActiveRecord
             $this->student_img->saveAs('uploads/' . $this->student_img->baseName . time() . '.' . $this->student_img->extension);
             $this->student_img = $this->student_img->baseName . time() . '.' . $this->student_img->extension;
         }
-        return $this->save() ? true : false;
+        return $this->save();
     }
 
     public function updateStudent($id)
@@ -75,8 +75,10 @@ class StudentForm extends ActiveRecord
         } elseif ($this->student_img === null) {
             $this->student_img = $student->student_img;
         } else {
-            $this->student_img->saveAs('uploads/' . $this->student_img->baseName . time() . '.' . $this->student_img->extension);
-            $this->student_img = $this->student_img->baseName . time() . '.' . $this->student_img->extension;
+            if ($this->student_img) {
+                $this->student_img->saveAs('uploads/' . $this->student_img->baseName . time() . '.' . $this->student_img->extension);
+                $this->student_img = $this->student_img->baseName . time() . '.' . $this->student_img->extension;
+            }
         }
         return $this->save() ? true : false;
     }

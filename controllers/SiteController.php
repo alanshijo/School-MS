@@ -139,7 +139,6 @@ class SiteController extends Controller
         if (Yii::$app->request->isPost) {
             if ($model->load(Yii::$app->request->post())) {
                 $model->student_img = UploadedFile::getInstance($model, 'student_img');
-
                 if ($model->validate()) {
                     if ($model->addStudent()) {
                         Yii::$app->session->addFlash('success', 'Student successfully added.');

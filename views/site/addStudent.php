@@ -21,7 +21,7 @@ $this->params['breadcrumbs'][] = 'Add Student';
             'showUpload' => false,
             'showCaption' => false,
             'showClose' => false,
-            'allowedFileExtensions' => ['jpg', 'jpeg', 'png'],
+            // 'allowedFileExtensions' => ['jpg', 'jpeg', 'png'],
             'removeClass' => 'btn btn-danger',
             'browseOnZoneClick' => true,
         ],
