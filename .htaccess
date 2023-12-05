@@ -1,0 +1,12 @@
+RewriteEngine on
+
+# Redirect all requests to the 'web' folder
+RewriteRule !^web/ web%{REQUEST_URI} [L]
+
+# If the requested resource is a file or directory, skip the 'web' folder redirection
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Redirect everything else to the entry script in the 'web' folder
+RewriteRule . web/index.php
