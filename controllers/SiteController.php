@@ -8,7 +8,7 @@ use Yii;
 use yii\data\ActiveDataProvider;
 use yii\filters\AccessControl;
 use yii\web\Controller;
-use yii\web\ForbiddenHttpException;
+use yii\web\NotFoundHttpException;
 use yii\web\Response;
 use yii\filters\VerbFilter;
 use app\models\LoginForm;
@@ -16,6 +16,7 @@ use yii\web\UploadedFile;
 
 class SiteController extends Controller
 {
+    const PAGE_SIZE = 3;
     /**
      * {@inheritdoc}
      */
@@ -24,7 +25,7 @@ class SiteController extends Controller
         return [
             'access' => [
                 'class' => AccessControl::class,
-                'only' => ['logout', 'signup', 'add-student', 'view-student', 'update-student', 'delete-student'],
+                'only' => ['signup', 'logout', 'add-student', 'view-student', 'update-student', 'delete-student'],
                 'rules' => [
                     [
                         'actions' => ['logout', 'add-student', 'view-student', 'update-student', 'delete-student'],
@@ -77,7 +78,7 @@ class SiteController extends Controller
         $data_provider = new ActiveDataProvider([
             'query' => StudentForm::find()->andWhere(['created_by' => Yii::$app->user->identity->id]),
             'pagination' => [
-                'pageSize' => 3
+                'pageSize' => self::PAGE_SIZE
             ],
             'sort' => [
                 'defaultOrder' => ['created_at' => SORT_DESC]
@@ -136,15 +137,11 @@ class SiteController extends Controller
     {
         $model = new StudentForm;
 
-        if (Yii::$app->request->isPost) {
-            if ($model->load(Yii::$app->request->post())) {
-                $model->student_img = UploadedFile::getInstance($model, 'student_img');
-                if ($model->validate()) {
-                    if ($model->addStudent()) {
-                        Yii::$app->session->addFlash('success', 'Student successfully added.');
-                        return $this->redirect(['index']);
-                    }
-                }
+        if ($model->load(Yii::$app->request->post())) {
+            $model->student_img = UploadedFile::getInstance($model, 'student_img');
+            if ($model->addStudent()) {
+                Yii::$app->session->addFlash('success', 'Student successfully added.');
+                return $this->redirect(['index']);
             }
         }
         return $this->render('addStudent', ['model' => $model]);
@@ -153,8 +150,11 @@ class SiteController extends Controller
     public function actionViewStudent($id)
     {
         $student = StudentForm::findOne(['id' => $id]);
+        if (!$student) {
+            throw new NotFoundHttpException('User not found');
+        }
         if (Yii::$app->user->identity->id !== $student->created_by) {
-            throw new ForbiddenHttpException('You don\'t have permission');
+            throw new NotFoundHttpException('Not found');
         }
         return $this->render('viewStudent', ['model' => $student]);
     }
@@ -162,8 +162,11 @@ class SiteController extends Controller
     public function actionUpdateStudent($id)
     {
         $student = StudentForm::findOne(['id' => $id]);
+        if (!$student) {
+            throw new NotFoundHttpException('User not found');
+        }
         if (Yii::$app->user->identity->id !== $student->created_by) {
-            throw new ForbiddenHttpException('You don\'t have permission');
+            throw new NotFoundHttpException('Not found');
         }
         if (Yii::$app->request->isPost) {
             if ($student->load(Yii::$app->request->post())) {
@@ -173,11 +176,9 @@ class SiteController extends Controller
                 if (UploadedFile::getInstance($student, 'student_img')) {
                     $student->student_img = UploadedFile::getInstance($student, 'student_img');
                 }
-                if ($student->validate()) {
-                    if ($student->updateStudent($id)) {
-                        Yii::$app->session->addFlash('success', 'Student successfully updated.');
-                        return $this->redirect(['index']);
-                    }
+                if ($student->updateStudent($id)) {
+                    Yii::$app->session->addFlash('success', 'Student successfully updated.');
+                    return $this->redirect(['index']);
                 }
             }
         }
@@ -188,10 +189,16 @@ class SiteController extends Controller
     public function actionDeleteStudent($id)
     {
         $student = StudentForm::findOne(['id' => $id]);
+        if (!$student) {
+            throw new NotFoundHttpException('User not found');
+        }
         if (Yii::$app->user->identity->id !== $student->created_by) {
-            throw new ForbiddenHttpException('You don\'t have permission');
+            throw new NotFoundHttpException('Not found');
         }
         if ($student->delete()) {
+            if ($student->student_img) {
+                unlink("uploads/$student->student_img");
+            }
             return $this->redirect(['index']);
         }
     }
