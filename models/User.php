@@ -5,6 +5,7 @@ namespace app\models;
 use Yii;
 use yii\behaviors\TimestampBehavior;
 use yii\db\ActiveRecord;
+use yii\db\Expression;
 
 class User extends ActiveRecord implements \yii\web\IdentityInterface
 {
@@ -12,7 +13,7 @@ class User extends ActiveRecord implements \yii\web\IdentityInterface
     public function behaviors()
     {
         return [
-            'class' => TimestampBehavior::class
+            ['class' => TimestampBehavior::class, 'value' => new Expression('NOW()')]
         ];
     }
 

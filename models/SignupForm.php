@@ -2,7 +2,6 @@
 
 namespace app\models;
 
-use Yii;
 use yii\base\Model;
 
 class SignupForm extends Model
@@ -18,6 +17,7 @@ class SignupForm extends Model
     {
         return [
             [['first_name', 'last_name', 'email', 'password', 'password_confirm'], 'required'],
+            [['first_name', 'last_name'], 'trim'],
             [['first_name', 'last_name'], 'match', 'pattern' => '/^[a-zA-Z\s]+$/', 'message' => 'Alphabets only'],
             ['email', 'email'],
             ['email', 'unique', 'targetClass' => User::class],
@@ -43,7 +43,7 @@ class SignupForm extends Model
                 $user->email = $this->email;
                 $user->password = $user->hashPassword($this->password);
                 $user->auth_key = $user->generateAuthKey();
-                return $user->save() ? true : false;
+                return $user->save();
             }
         }
         return false;

@@ -11,9 +11,6 @@ use yii\db\Expression;
 class StudentForm extends ActiveRecord
 {
 
-    const SCENARIO_ADD = 'add';
-    const SCENARIO_UPDATE = 'update';
-
     public $remove_image;
 
     public function behaviors()
@@ -60,27 +57,36 @@ class StudentForm extends ActiveRecord
 
     public function addStudent()
     {
-        if ($this->student_img) {
-            $this->student_img->saveAs('uploads/' . $this->student_img->baseName . time() . '.' . $this->student_img->extension);
-            $this->student_img = $this->student_img->baseName . time() . '.' . $this->student_img->extension;
+        if ($this->validate()) {
+            if ($this->student_img) {
+                $this->student_img->saveAs('uploads/' . $this->student_img->baseName . time() . '.' . $this->student_img->extension);
+                $this->student_img = $this->student_img->baseName . time() . '.' . $this->student_img->extension;
+            }
+            return $this->save();
         }
-        return $this->save();
+        return false;
     }
 
     public function updateStudent($id)
     {
         $student = $this->findOne(['id' => $id]);
-        if ($this->student_img === 'removed') {
-            $this->student_img = null;
-        } elseif ($this->student_img === null) {
-            $this->student_img = $student->student_img;
-        } else {
-            if ($this->student_img) {
-                $this->student_img->saveAs('uploads/' . $this->student_img->baseName . time() . '.' . $this->student_img->extension);
-                $this->student_img = $this->student_img->baseName . time() . '.' . $this->student_img->extension;
+        if ($this->validate()) {
+            if ($this->student_img === 'removed') {
+                $this->student_img = null;
+                if ($student->student_img) {
+                    unlink("uploads/$student->student_img");
+                }
+            } elseif ($this->student_img === null) {
+                $this->student_img = $student->student_img;
+            } else {
+                if ($this->student_img) {
+                    $this->student_img->saveAs('uploads/' . $this->student_img->baseName . time() . '.' . $this->student_img->extension);
+                    $this->student_img = $this->student_img->baseName . time() . '.' . $this->student_img->extension;
+                }
             }
+            return $this->save();
         }
-        return $this->save() ? true : false;
+        return false;
     }
 
     public function getUser()

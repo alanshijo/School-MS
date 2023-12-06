@@ -6,7 +6,7 @@ use yii\bootstrap5\LinkPager;
 use yii\helpers\Html;
 use yii\widgets\ListView;
 
-$this->title = 'SMS';
+$this->title = 'School MS';
 ?>
 <div class="site-index">
     <?= Html::tag('h1', 'Student details', ['class' => 'mb-4']) ?>
